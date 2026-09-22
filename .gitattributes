@@ -1,0 +1,10 @@
+# Normaliza los finales de línea a LF dentro del repositorio, sin depender de
+# la configuración de core.autocrlf de cada máquina. Evita diferencias
+# fantasma entre quien trabaja en Windows y la compilación en Linux.
+* text=auto eol=lf
+
+# Binarios: git no debe tocarlos.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
