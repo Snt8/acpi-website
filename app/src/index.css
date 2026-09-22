@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+   Paleta tomada del boceto: papel cuadriculado + tinta. El acento verde es el
+   del semáforo en paso, el ámbar el de la cuenta regresiva.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-paper: #f8f8f5;
+  --color-paper-raised: #ffffff;
+  --color-ink: #0d1117;
+  --color-ink-soft: #4b5563;
+  --color-ink-faint: #8b8f98;
+  --color-line: #e2e0d8;
+  --color-line-strong: #c9c6ba;
+
+  --color-signal: #14795a;
+  --color-signal-soft: #e6f2ed;
+  --color-signal-strong: #0f5c45;
+
+  --color-amber: #b9791a;
+  --color-amber-soft: #fbf1df;
+
+  --font-display:
+    'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+
+  --radius-card: 1.25rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--color-paper);
+    color: var(--color-ink-soft);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  /* Anillo de foco visible y consistente: la navegación por teclado es
+     requisito, no adorno, en un proyecto de accesibilidad. */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilidades propias
+--------------------------------------------------------------------------- */
+
+/* El papel cuadriculado del boceto, convertido en textura de fondo. */
+@utility bg-grid-paper {
+  background-image:
+    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Desvanece cualquier fondo hacia los bordes. */
+@utility mask-fade-edges {
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 78%);
+}
