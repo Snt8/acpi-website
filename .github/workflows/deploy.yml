@@ -1,0 +1,80 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos mínimos que exige el despliegue con OIDC de GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un despliegue a la vez. No se cancela el que está en curso: interrumpir una
+# publicación a medias dejaría el sitio en un estado incoherente.
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  build:
+    name: Compilar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      # El lint corre antes de compilar para que un error nunca llegue a
+      # publicarse: si falla, el job se detiene y el sitio anterior sigue en pie.
+      - name: Revisar el código
+        run: pnpm lint
+
+      - name: Compilar
+        run: pnpm build
+
+      # GitHub Pages sirve archivos estáticos y no reescribe rutas: al pedir
+      # /acpi-website/brazalete no encuentra el archivo y devuelve 404.html.
+      # Una copia idéntica de index.html deja que el router resuelva la ruta.
+      - name: Preparar el respaldo de rutas del router
+        run: cp dist/index.html dist/404.html
+
+      # Sin este archivo, Jekyll descartaría cualquier recurso cuyo nombre
+      # empiece por guion bajo.
+      - name: Desactivar Jekyll
+        run: touch dist/.nojekyll
+
+      - name: Subir el artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Relativo a la raíz del repositorio, no a `defaults.run`.
+          path: app/dist
+
+  deploy:
+    name: Publicar
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
