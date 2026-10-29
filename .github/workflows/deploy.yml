@@ -3,6 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Cada hora se vuelve a compilar con la telemetría recién leída de Grafana.
+  # GitHub puede retrasar unos minutos las ejecuciones programadas, y las
+  # desactiva si el repositorio pasa 60 días sin actividad.
+  schedule:
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 # Permisos mínimos que exige el despliegue con OIDC de GitHub Pages.
@@ -53,8 +58,26 @@ jobs:
       - name: Revisar el código
         run: pnpm lint
 
+      - name: Ejecutar las pruebas
+        run: pnpm test
+
+      # El resumen se anonimiza aquí, en el runner: el token de Grafana y los
+      # datos sin agregar nunca llegan al navegador ni al repositorio.
+      - name: Obtener la telemetría de Grafana
+        uses: ./.github/actions/grafana-telemetry
+        with:
+          grafana-url: ${{ vars.GRAFANA_URL }}
+          grafana-token: ${{ secrets.GRAFANA_TOKEN }}
+          queries: ${{ vars.GRAFANA_QUERIES }}
+
+      # La clave de Maps acaba en el bundle (Google la usa desde el navegador),
+      # así que su protección es restringirla por dominio en Google Cloud. Va
+      # en un secreto solo para que no quede escrita en el repositorio.
       - name: Compilar
         run: pnpm build
+        env:
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.GOOGLE_MAPS_MAP_ID }}
 
       # GitHub Pages sirve archivos estáticos y no reescribe rutas: al pedir
       # /acpi-website/brazalete no encuentra el archivo y devuelve 404.html.
