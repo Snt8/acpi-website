@@ -1,3 +1,4 @@
+import { BRAND_LOGO } from '../core/content/media.content.js'
 import { BRAND, FOOTER } from '../core/content/site.content.js'
 import { Container } from '../shared/ui/index.js'
 
@@ -6,6 +7,16 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-line bg-paper-raised">
       <Container className="flex flex-col items-center gap-4 py-10 text-center">
+        {/* El nombre ya lo anuncia la línea final; aquí el logo es decorativo. */}
+        <img
+          src={BRAND_LOGO.src}
+          width={BRAND_LOGO.width}
+          height={BRAND_LOGO.height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="mb-2 h-14 w-auto"
+        />
         <p className="max-w-2xl text-sm leading-relaxed text-ink-faint">
           {FOOTER.note}
         </p>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 560" fill="none" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <!-- Teléfono -->
+  <rect x="38" y="26" width="252" height="520" rx="40" fill="#0d1117" fill-opacity="0.07"/>
+  <rect x="30" y="16" width="252" height="520" rx="40" fill="#0d1117"/>
+  <rect x="42" y="28" width="228" height="496" rx="30" fill="#f8f8f5"/>
+  <rect x="126" y="38" width="60" height="14" rx="7" fill="#0d1117"/>
+
+  <!-- Cabecera de la app -->
+  <text x="58" y="86" font-size="16" font-weight="700" fill="#0d1117">ACPIGPS</text>
+  <rect x="172" y="72" width="82" height="20" rx="10" fill="#e6f2ed"/>
+  <circle cx="184" cy="82" r="4" fill="#14795a"/>
+  <text x="193" y="86" font-size="10" font-weight="600" fill="#0f5c45">Conectado</text>
+
+  <!-- Mapa -->
+  <rect x="56" y="104" width="200" height="146" rx="18" fill="#ffffff" stroke="#e2e0d8" stroke-width="1.5"/>
+  <g stroke="#e2e0d8" stroke-width="10" stroke-linecap="round">
+    <line x1="70" y1="160" x2="242" y2="160"/>
+    <line x1="150" y1="116" x2="150" y2="238"/>
+    <line x1="70" y1="214" x2="242" y2="214"/>
+  </g>
+  <g fill="#0d1117" fill-opacity="0.75">
+    <rect x="143" y="168" width="14" height="2.5" rx="1"/>
+    <rect x="143" y="173" width="14" height="2.5" rx="1"/>
+    <rect x="143" y="178" width="14" height="2.5" rx="1"/>
+    <rect x="143" y="183" width="14" height="2.5" rx="1"/>
+  </g>
+  <path d="M96 214H150V136" stroke="#14795a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 7"/>
+  <circle cx="96" cy="214" r="7" fill="#14795a" stroke="#ffffff" stroke-width="3"/>
+  <g transform="translate(150 140)">
+    <path d="M0 0C-3-8-11-12-11-21A11 11 0 1 1 11-21C11-12 3-8 0 0Z" fill="#b9791a" stroke="#0d1117" stroke-width="1.5"/>
+    <circle cx="0" cy="-21" r="4" fill="#ffffff"/>
+  </g>
+
+  <!-- Indicación -->
+  <rect x="56" y="266" width="200" height="104" rx="18" fill="#e6f2ed" stroke="#14795a" stroke-width="1.5"/>
+  <circle cx="98" cy="318" r="26" fill="#14795a"/>
+  <path d="M88 328V318a8 8 0 0 1 8-8h12M102 302l8 8-8 8" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="134" y="312" font-size="16" font-weight="700" fill="#0d1117">Gira a la</text>
+  <text x="134" y="333" font-size="16" font-weight="700" fill="#0d1117">derecha</text>
+
+  <!-- Cuenta regresiva -->
+  <circle cx="102" cy="436" r="32" stroke="#e2e0d8" stroke-width="8"/>
+  <circle cx="102" cy="436" r="32" stroke="#b9791a" stroke-width="8" stroke-linecap="round" stroke-dasharray="140 202" transform="rotate(-90 102 436)"/>
+  <text x="102" y="444" font-size="22" font-weight="700" fill="#0d1117" text-anchor="middle">12</text>
+  <text x="148" y="430" font-size="13" font-weight="600" fill="#0d1117">segundos</text>
+  <text x="148" y="449" font-size="12" fill="#4b5563">para cruzar</text>
+
+  <rect x="126" y="506" width="60" height="4" rx="2" fill="#8b8f98"/>
+</svg>

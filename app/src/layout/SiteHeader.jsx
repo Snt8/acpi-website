@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import { BRAND_LOGO } from '../core/content/media.content.js'
 import { BRAND, NAV_LINKS } from '../core/content/site.content.js'
 import { PATHS } from '../core/routing/paths.js'
 import { cx } from '../shared/lib/cx.js'
@@ -32,11 +33,15 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-paper/90 backdrop-blur">
       <Container className="flex h-16 items-center justify-between gap-4">
-        <Link
-          to={PATHS.home}
-          className="font-display text-xl font-semibold tracking-tight text-ink"
-        >
-          {BRAND.name}
+        <Link to={PATHS.home} className="-my-1 shrink-0 rounded-lg">
+          <img
+            src={BRAND_LOGO.src}
+            width={BRAND_LOGO.width}
+            height={BRAND_LOGO.height}
+            alt={BRAND_LOGO.alt}
+            fetchPriority="high"
+            className="h-10 w-auto"
+          />
           <span className="sr-only"> — {BRAND.fullName}</span>
         </Link>
 
