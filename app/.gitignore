@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Resumen de telemetría: lo genera la Action de Grafana en cada despliegue
+public/telemetry.json

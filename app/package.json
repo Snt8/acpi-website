@@ -8,9 +8,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "test": "node --test",
+    "telemetry": "node --env-file-if-exists=.env.local scripts/telemetry/fetch-telemetry.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "2.1.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4"

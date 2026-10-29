@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+/**
+ * Consulta Grafana y escribe el resumen anónimo de telemetría que publica el
+ * sitio. Lo ejecuta la Action `.github/actions/grafana-telemetry` antes de
+ * compilar; en local: `pnpm telemetry` con las variables en `.env.local`.
+ *
+ * Variables de entorno:
+ *   GRAFANA_URL         URL base de Grafana (p. ej. https://acpi.grafana.net)
+ *   GRAFANA_TOKEN       token de una service account con rol Viewer
+ *   GRAFANA_QUERIES     JSON con el arreglo `queries` de /api/ds/query
+ *   GRAFANA_RANGE_DAYS  días hacia atrás que cubre el resumen (30 por defecto)
+ *   TELEMETRY_OUTPUT    archivo de salida (public/telemetry.json por defecto)
+ *
+ * Sin credenciales escribe un resumen vacío y termina bien: un fork o una
+ * copia local deben poder compilar el sitio sin acceso a Grafana. Con
+ * credenciales, cualquier fallo termina con error para que el despliegue se
+ * detenga y siga publicado el último resumen bueno.
+ */
+import { mkdir, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { SNAPSHOT_STATUS, emptySnapshot } from '../../src/core/telemetry/snapshot.js'
+import { buildSnapshot } from './anonymize.mjs'
+import { queryGrafana } from './grafana.mjs'
+
+const DAY_MS = 24 * 60 * 60 * 1000
+const inActions = process.env.GITHUB_ACTIONS === 'true'
+
+// Anotaciones de GitHub Actions: aparecen en el resumen del job.
+const warn = (message) => console.warn(inActions ? `::warning::${message}` : message)
+const fail = (message) => console.error(inActions ? `::error::${message}` : message)
+
+function parseQueries(raw) {
+  const parsed = JSON.parse(raw)
+  const queries = Array.isArray(parsed) ? parsed : parsed?.queries
+  if (!Array.isArray(queries) || queries.length === 0) {
+    throw new Error('GRAFANA_QUERIES debe ser un arreglo JSON con al menos una consulta.')
+  }
+  return queries
+}
+
+async function writeSnapshot(path, snapshot) {
+  await mkdir(dirname(path), { recursive: true })
+  await writeFile(path, `${JSON.stringify(snapshot, null, 2)}\n`)
+}
+
+async function main() {
+  const {
+    GRAFANA_URL,
+    GRAFANA_TOKEN,
+    GRAFANA_QUERIES,
+    GRAFANA_RANGE_DAYS = '30',
+    TELEMETRY_OUTPUT = 'public/telemetry.json',
+  } = process.env
+
+  const output = resolve(TELEMETRY_OUTPUT)
+  const to = new Date()
+
+  if (!GRAFANA_URL || !GRAFANA_TOKEN || !GRAFANA_QUERIES) {
+    warn('Grafana no está configurado: se publica un resumen de telemetría vacío.')
+    await writeSnapshot(output, emptySnapshot(SNAPSHOT_STATUS.unconfigured, { generatedAt: to }))
+    return
+  }
+
+  const days = Number(GRAFANA_RANGE_DAYS)
+  if (!Number.isInteger(days) || days <= 0) {
+    throw new Error('GRAFANA_RANGE_DAYS debe ser un número entero de días mayor que cero.')
+  }
+  const from = new Date(to.getTime() - days * DAY_MS)
+
+  const rows = await queryGrafana({
+    url: GRAFANA_URL,
+    token: GRAFANA_TOKEN,
+    queries: parseQueries(GRAFANA_QUERIES),
+    from,
+    to,
+  })
+  const snapshot = buildSnapshot(rows, { generatedAt: to, from, to })
+  await writeSnapshot(output, snapshot)
+
+  // Solo cifras agregadas: el registro del job también es público.
+  console.log(
+    `Telemetría: ${rows.length} filas leídas, estado «${snapshot.status}», ` +
+      `${snapshot.zones.length} zonas publicadas → ${TELEMETRY_OUTPUT}`,
+  )
+}
+
+main().catch((error) => {
+  fail(`No se pudo generar la telemetría: ${error.message}`)
+  process.exitCode = 1
+})

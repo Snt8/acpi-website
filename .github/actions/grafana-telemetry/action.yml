@@ -1,0 +1,44 @@
+name: Telemetría de Grafana
+description: >
+  Consulta la API de Grafana y escribe un resumen anónimo de los cruces
+  (app/public/telemetry.json) para que el sitio lo publique.
+
+# Sin credenciales la Action escribe un resumen vacío y termina bien, de modo
+# que un fork o un repositorio sin configurar sigue pudiendo desplegar.
+inputs:
+  grafana-url:
+    description: URL base de Grafana, p. ej. https://acpi.grafana.net
+    required: false
+  grafana-token:
+    description: Token de una service account con rol Viewer.
+    required: false
+  queries:
+    description: >
+      Arreglo JSON con las consultas de /api/ds/query. Deben devolver los
+      campos del payload de la app: lat, lon, waiting_sec, duration_sec,
+      status y panics (docs/grafana-setup.md del repositorio ACPI).
+    required: false
+  range-days:
+    description: Días hacia atrás que cubre el resumen.
+    required: false
+    default: '30'
+  output:
+    description: Archivo de salida, relativo a la raíz del repositorio.
+    required: false
+    default: app/public/telemetry.json
+
+runs:
+  using: composite
+  steps:
+    # Las entradas llegan al script como variables de entorno y nunca se
+    # interpolan en el comando: así ni el token ni las consultas pueden
+    # alterar lo que ejecuta el shell.
+    - name: Consultar Grafana y anonimizar
+      shell: bash
+      run: node "$GITHUB_WORKSPACE/app/scripts/telemetry/fetch-telemetry.mjs"
+      env:
+        GRAFANA_URL: ${{ inputs.grafana-url }}
+        GRAFANA_TOKEN: ${{ inputs.grafana-token }}
+        GRAFANA_QUERIES: ${{ inputs.queries }}
+        GRAFANA_RANGE_DAYS: ${{ inputs.range-days }}
+        TELEMETRY_OUTPUT: ${{ github.workspace }}/${{ inputs.output }}

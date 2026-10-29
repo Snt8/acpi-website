@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 570 450" fill="none">
+  <!-- Ejes de las calles -->
+  <g stroke="#e2e0d8" stroke-width="2" stroke-dasharray="8 8">
+    <line x1="195" y1="0" x2="195" y2="450"/>
+    <line x1="375" y1="0" x2="375" y2="450"/>
+    <line x1="0" y1="155" x2="570" y2="155"/>
+    <line x1="0" y1="295" x2="570" y2="295"/>
+  </g>
+
+  <!-- Manzanas -->
+  <g fill="#f1efe8" stroke="#c9c6ba" stroke-width="1.5">
+    <rect x="30" y="30" width="150" height="110" rx="14"/>
+    <rect x="210" y="30" width="150" height="110" rx="14"/>
+    <rect x="390" y="30" width="150" height="110" rx="14"/>
+    <rect x="30" y="170" width="150" height="110" rx="14"/>
+    <rect x="210" y="170" width="150" height="110" rx="14"/>
+    <rect x="390" y="170" width="150" height="110" rx="14"/>
+    <rect x="30" y="310" width="150" height="110" rx="14"/>
+    <rect x="210" y="310" width="150" height="110" rx="14"/>
+    <rect x="390" y="310" width="150" height="110" rx="14"/>
+  </g>
+
+  <!-- Edificios -->
+  <g fill="#ffffff" stroke="#e2e0d8" stroke-width="1.5">
+    <rect x="44" y="44" width="56" height="38" rx="6"/>
+    <rect x="108" y="44" width="58" height="82" rx="6"/>
+    <rect x="44" y="90" width="56" height="36" rx="6"/>
+    <rect x="224" y="44" width="122" height="34" rx="6"/>
+    <rect x="224" y="86" width="58" height="40" rx="6"/>
+    <rect x="290" y="86" width="56" height="40" rx="6"/>
+    <rect x="404" y="44" width="40" height="82" rx="6"/>
+    <rect x="452" y="44" width="74" height="38" rx="6"/>
+    <rect x="452" y="90" width="74" height="36" rx="6"/>
+    <rect x="44" y="184" width="122" height="36" rx="6"/>
+    <rect x="44" y="228" width="122" height="38" rx="6"/>
+    <rect x="404" y="184" width="58" height="82" rx="6"/>
+    <rect x="470" y="184" width="56" height="82" rx="6"/>
+    <rect x="224" y="324" width="58" height="82" rx="6"/>
+    <rect x="290" y="324" width="56" height="82" rx="6"/>
+  </g>
+
+  <!-- Parque -->
+  <g fill="#e6f2ed" stroke="#14795a" stroke-opacity="0.35" stroke-width="1.5">
+    <rect x="224" y="184" width="122" height="82" rx="10"/>
+  </g>
+  <g fill="#14795a" fill-opacity="0.22">
+    <circle cx="250" cy="208" r="11"/>
+    <circle cx="278" cy="232" r="14"/>
+    <circle cx="318" cy="206" r="10"/>
+    <circle cx="322" cy="244" r="9"/>
+    <circle cx="246" cy="246" r="8"/>
+    <circle cx="62" cy="340" r="12"/>
+    <circle cx="96" cy="362" r="15"/>
+    <circle cx="140" cy="336" r="10"/>
+    <circle cx="66" cy="392" r="9"/>
+    <circle cx="146" cy="390" r="12"/>
+  </g>
+
+  <!-- Zonas agregadas -->
+  <circle cx="195" cy="155" r="74" fill="#14795a" fill-opacity="0.1"/>
+  <circle cx="375" cy="295" r="56" fill="#14795a" fill-opacity="0.08"/>
+  <circle cx="375" cy="155" r="40" fill="#b9791a" fill-opacity="0.08"/>
+  <rect x="145" y="105" width="100" height="100" rx="4" stroke="#14795a" stroke-width="1.5" stroke-dasharray="6 6" stroke-opacity="0.7"/>
+
+  <!-- Pasos peatonales -->
+  <g fill="#0d1117" fill-opacity="0.78">
+    <rect x="183" y="121" width="3" height="15" rx="1"/>
+    <rect x="189" y="121" width="3" height="15" rx="1"/>
+    <rect x="195" y="121" width="3" height="15" rx="1"/>
+    <rect x="201" y="121" width="3" height="15" rx="1"/>
+    <rect x="183" y="174" width="3" height="15" rx="1"/>
+    <rect x="189" y="174" width="3" height="15" rx="1"/>
+    <rect x="195" y="174" width="3" height="15" rx="1"/>
+    <rect x="201" y="174" width="3" height="15" rx="1"/>
+    <rect x="161" y="143" width="15" height="3" rx="1"/>
+    <rect x="161" y="149" width="15" height="3" rx="1"/>
+    <rect x="161" y="155" width="15" height="3" rx="1"/>
+    <rect x="161" y="161" width="15" height="3" rx="1"/>
+    <rect x="214" y="143" width="15" height="3" rx="1"/>
+    <rect x="214" y="149" width="15" height="3" rx="1"/>
+    <rect x="214" y="155" width="15" height="3" rx="1"/>
+    <rect x="214" y="161" width="15" height="3" rx="1"/>
+    <rect x="363" y="261" width="3" height="15" rx="1"/>
+    <rect x="369" y="261" width="3" height="15" rx="1"/>
+    <rect x="375" y="261" width="3" height="15" rx="1"/>
+    <rect x="381" y="261" width="3" height="15" rx="1"/>
+    <rect x="394" y="283" width="15" height="3" rx="1"/>
+    <rect x="394" y="289" width="15" height="3" rx="1"/>
+    <rect x="394" y="295" width="15" height="3" rx="1"/>
+    <rect x="394" y="301" width="15" height="3" rx="1"/>
+    <rect x="363" y="121" width="3" height="15" rx="1"/>
+    <rect x="369" y="121" width="3" height="15" rx="1"/>
+    <rect x="375" y="121" width="3" height="15" rx="1"/>
+    <rect x="381" y="121" width="3" height="15" rx="1"/>
+  </g>
+
+  <!-- Semáforo de la esquina principal -->
+  <g transform="translate(228 102)">
+    <rect x="-1" y="22" width="2" height="16" fill="#0d1117"/>
+    <rect x="-6" y="0" width="12" height="26" rx="4" fill="#0d1117"/>
+    <circle cx="0" cy="6" r="2.6" fill="#e23b2e"/>
+    <circle cx="0" cy="13" r="2.6" fill="#f2b632"/>
+    <circle cx="0" cy="20" r="2.6" fill="#3fae49"/>
+  </g>
+
+  <!-- Reportes -->
+  <g stroke="#0d1117" stroke-width="1.5">
+    <g transform="translate(375 152)">
+      <path d="M0 0C-4-10-14-16-14-27A14 14 0 1 1 14-27C14-16 4-10 0 0Z" fill="#b9791a"/>
+      <circle cx="0" cy="-27" r="5" fill="#ffffff" stroke="none"/>
+    </g>
+    <g transform="translate(195 292)">
+      <path d="M0 0C-4-10-14-16-14-27A14 14 0 1 1 14-27C14-16 4-10 0 0Z" fill="#b9791a"/>
+      <circle cx="0" cy="-27" r="5" fill="#ffffff" stroke="none"/>
+    </g>
+    <g transform="translate(195 152)">
+      <path d="M0 0C-5-12-17-19-17-32A17 17 0 1 1 17-32C17-19 5-12 0 0Z" fill="#14795a"/>
+      <circle cx="0" cy="-32" r="6" fill="#ffffff" stroke="none"/>
+    </g>
+  </g>
+
+  <!-- Tarjeta de cifras -->
+  <g>
+    <rect x="404" y="324" width="122" height="84" rx="12" fill="#ffffff" stroke="#c9c6ba" stroke-width="1.5"/>
+    <rect x="418" y="338" width="48" height="7" rx="3.5" fill="#e2e0d8"/>
+    <g fill="#14795a">
+      <path d="M420 394V378a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v16Z"/>
+      <path d="M442 394V366a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v28Z"/>
+      <path d="M464 394V372a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v22Z"/>
+      <path d="M486 394V358a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v36Z"/>
+    </g>
+    <line x1="416" y1="394.75" x2="514" y2="394.75" stroke="#c9c6ba" stroke-width="1.5"/>
+  </g>
+</svg>
