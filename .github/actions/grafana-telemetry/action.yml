@@ -14,10 +14,14 @@ inputs:
     required: false
   queries:
     description: >
-      Arreglo JSON con las consultas de /api/ds/query. Con Loki, cada
-      línea debe ser el JSON de una sesión; con una fuente tabular, una fila
-      por sesión. En ambos casos con los campos lat, lon, waiting_sec,
-      duration_sec, status y panics (payload de la app del repositorio ACPI).
+      Arreglo JSON con las consultas de /api/ds/query sobre Loki. Cada línea
+      es un evento `cruce` o `semaforo` del formato v2 de la app
+      (docs/grafana-setup.md del repositorio ACPI).
+    required: false
+  previous-url:
+    description: >
+      Resumen ya publicado, del que se hereda el registro de semáforos que
+      Loki ya no conserva.
     required: false
   range-days:
     description: Días hacia atrás que cubre el resumen.
@@ -42,4 +46,5 @@ runs:
         GRAFANA_TOKEN: ${{ inputs.grafana-token }}
         GRAFANA_QUERIES: ${{ inputs.queries }}
         GRAFANA_RANGE_DAYS: ${{ inputs.range-days }}
+        PREVIOUS_SNAPSHOT_URL: ${{ inputs.previous-url }}
         TELEMETRY_OUTPUT: ${{ github.workspace }}/${{ inputs.output }}

@@ -36,7 +36,7 @@ que actualizarla aquí:
 | En ACPI | Uso en el sitio | Qué tocar si cambia |
 | --- | --- | --- |
 | [`assets/ACPI-V3.5-Logo-updated.pdf`](https://github.com/Snt8/ACPI/blob/main/assets/ACPI-V3.5-Logo-updated.pdf) | Logo de la cabecera y del pie, y favicons. `ACPI-3.5-logo.pdf` es la versión anterior y no se usa. | `app/src/assets/brand/` y `app/public/` |
-| [`docs/grafana-setup.md`](https://github.com/Snt8/ACPI/blob/main/docs/grafana-setup.md) | Contrato del payload que la app envía al cerrar cada cruce; la Action lee esos campos. | `app/scripts/telemetry/anonymize.mjs` y sus pruebas |
+| [`docs/grafana-setup.md`](https://github.com/Snt8/ACPI/blob/main/docs/grafana-setup.md) | Contrato de datos v2 de la app (eventos `cruce` y `semaforo` en Loki); la Action lee esos campos. | `app/scripts/telemetry/` y sus pruebas |
 | [`docs/figuras/`](https://github.com/Snt8/ACPI/tree/main/docs/figuras) | Figura de arquitectura en la que se basa la sección «De la esquina al panel». | `app/src/core/content/telemetry.content.js` |
 
 ## Páginas
@@ -111,27 +111,41 @@ Actions*:
 | `GRAFANA_TOKEN` | Secreto | Token de una service account con rol Viewer |
 | `GRAFANA_QUERIES` | Variable | Arreglo JSON `queries` de `POST /api/ds/query` |
 
-La app Android (`GrafanaReporter.kt` en el repositorio ACPI) envía cada cruce
-a **Loki**, el servicio de logs de Grafana Cloud: una línea JSON por sesión con
-la etiqueta `app="acpi"`. `GRAFANA_QUERIES` lee esas líneas desde la fuente de
-logs del stack (por lo general `grafanacloud-<stack>-logs`):
+La app móvil (`app-movil/src/telemetria/` en el repositorio ACPI) escribe en
+**Loki**, el servicio de logs de Grafana Cloud, eventos del formato v2: un
+evento `cruce` al terminar cada sesión y un evento `semaforo` cada vez que un
+semáforo se crea, se edita o se borra en el teléfono. `GRAFANA_QUERIES` lee
+ambos tipos desde la fuente de logs del stack (por lo general
+`grafanacloud-<stack>-logs`), cada uno con su propio límite de líneas:
 
 ```json
-[{
-  "refId": "A",
-  "datasource": { "type": "loki", "uid": "<uid-de-la-fuente-de-logs>" },
-  "expr": "{app=\"acpi\"}",
-  "queryType": "range",
-  "maxLines": 5000
-}]
+[
+  { "refId": "cruces", "datasource": { "type": "loki", "uid": "<uid-de-la-fuente-de-logs>" },
+    "expr": "{app=\"acpi\", tipo=\"cruce\"}", "queryType": "range", "maxLines": 5000 },
+  { "refId": "semaforos", "datasource": { "type": "loki", "uid": "<uid-de-la-fuente-de-logs>" },
+    "expr": "{app=\"acpi\", tipo=\"semaforo\"}", "queryType": "range", "maxLines": 5000 }
+]
 ```
 
-El script toma el JSON de cada línea (`Line`) como la fila del cruce. También
-acepta fuentes tabulares (SQL), siempre que devuelvan una fila por sesión con
-las columnas `lat`, `lon`, `waiting_sec`, `duration_sec`, `status` y
-`panics`. Loki limita cada consulta a 5000 líneas: si en 30 días hay más
-cruces, conviene subir ese límite en el stack o acortar el periodo con
-`range-days` en el workflow.
+Con eso la Action publica dos cosas:
+
+- **Cifras de los cruces**, anónimas: sesiones, espera media, duración media
+  del cruce, sesiones con desorientación y verde restante al empezar a cruzar,
+  en total y por zonas. Se descartan las sesiones del brazalete simulado.
+- **Registro de semáforos** con baliza, que el mapa muestra con un icono de
+  semáforo. Se publica la posición y si lo detectó el brazalete o se registró a
+  mano; el nombre no, porque es texto libre.
+
+Loki solo conserva los registros unos días (en el plan gratuito, unas dos
+semanas). Para que un semáforo no desaparezca del mapa cuando su evento
+caduca, el registro es acumulativo: en cada ejecución la Action lee el
+`telemetry.json` ya publicado y le aplica, en orden, los eventos `creado`,
+`editado` y `borrado` de la ventana consultada. Las cifras de cruces, en
+cambio, cubren solo lo que Loki conserva.
+
+No hace falta publicar un tablero de Grafana ni poner un token en la web: la
+lectura con el token de Viewer ocurre en el runner de GitHub, que hace de
+intermediario.
 
 Sin las variables de Grafana la Action publica un resumen vacío y el sitio se
 despliega igual; la página dice que todavía no hay datos. Con ellas, si Grafana
@@ -145,8 +159,8 @@ El sitio no recibe datos de nadie que lo visite:
   (`localStorage`). No salen del equipo.
 - **Telemetría.** El navegador solo descarga `telemetry.json`, que ya llega
   agregado. La anonimización ocurre en el runner de GitHub: se leen únicamente
-  los campos necesarios (nunca `device_id`, `session_id`, `timestamp` ni
-  `steps`), los cruces se agrupan en zonas de unos 110 m, una zona solo se
+  los campos necesarios (nunca el seudónimo `dispositivo`, la `sesion`, los
+  momentos exactos ni el nombre de los semáforos), los cruces se agrupan en zonas de unos 110 m, una zona solo se
   publica si reúne al menos 5 cruces y, si el total no llega a ese mínimo, no
   se publica ninguna cifra.
 

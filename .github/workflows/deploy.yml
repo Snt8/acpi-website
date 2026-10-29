@@ -69,6 +69,8 @@ jobs:
           grafana-url: ${{ vars.GRAFANA_URL }}
           grafana-token: ${{ secrets.GRAFANA_TOKEN }}
           queries: ${{ vars.GRAFANA_QUERIES }}
+          # El registro de semáforos se acumula sobre el ya publicado.
+          previous-url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/telemetry.json
 
       - name: Compilar
         run: pnpm build

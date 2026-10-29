@@ -31,7 +31,7 @@ export function ZoneTable({ zones }) {
               {columns.disorientation}
             </th>
             <th scope="col" className={`${CELL} font-semibold`}>
-              {columns.panic}
+              {columns.greenLeft}
             </th>
           </tr>
         </thead>
@@ -47,7 +47,7 @@ export function ZoneTable({ zones }) {
               <td className={CELL}>{formatInteger(zone.sessions)}</td>
               <td className={CELL}>{formatSeconds(zone.avgWaitSeconds)}</td>
               <td className={CELL}>{formatPercent(zone.disorientationRate)}</td>
-              <td className={CELL}>{formatInteger(zone.panicAlerts)}</td>
+              <td className={CELL}>{formatSeconds(zone.avgGreenLeftSeconds)}</td>
             </tr>
           ))}
         </tbody>

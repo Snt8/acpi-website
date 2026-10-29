@@ -33,13 +33,13 @@ export const TELEMETRY_FLOW = Object.freeze({
       id: 'phone',
       link: 'Internet, cuando haya señal',
       title: 'App móvil',
-      body: 'Marca la esquina con el GPS y envía a Grafana un resumen: espera, duración, orientación y alertas.',
+      body: 'Ubica el semáforo con el GPS mientras se espera y, al terminar, envía a Grafana la espera, la duración del cruce y cuántas veces hubo que corregir el rumbo.',
     },
     {
       id: 'panel',
       link: null,
       title: 'Panel de telemetría',
-      body: 'Cada hora lee Grafana, agrupa los cruces por zonas y publica aquí solo cifras anónimas.',
+      body: 'Cada hora lee Grafana, agrupa los cruces por zonas y publica aquí cifras anónimas y el mapa de semáforos registrados.',
     },
   ],
 })
@@ -59,9 +59,18 @@ export const REPORTS_SECTION = Object.freeze({
     'Marca un cruce que no funciona como debería. Por ahora los reportes se guardan solo en este navegador: nadie más los ve y no salen de tu equipo.',
   map: {
     label: 'Mapa de semáforos reportados',
-    hint: 'Haz clic en el mapa para tomar las coordenadas del cruce.',
+    hint: 'Haz clic en el mapa, o en un semáforo registrado, para tomar las coordenadas del cruce.',
     listHint: 'La lista de reportes contiene la misma información que el mapa.',
     loading: 'Cargando el mapa…',
+    legend: {
+      reports: 'Tus reportes',
+      lights: (count) => `Semáforos registrados por la app (${count})`,
+    },
+    lightTitle: {
+      brazalete: 'Semáforo con baliza, detectado por el brazalete',
+      manual: 'Semáforo con baliza, registrado en la app',
+      unknown: 'Semáforo con baliza',
+    },
     zoomIn: 'Acercar',
     zoomOut: 'Alejar',
     unavailable:
@@ -104,21 +113,21 @@ export const CITY_TELEMETRY = Object.freeze({
   description:
     'Cifras agregadas a partir de los cruces que registra la app. Se actualizan cada hora y se publican de forma anónima: sin nombres, sin dispositivos y sin recorridos.',
   stats: {
-    sessions: 'Cruces registrados',
+    sessions: 'Sesiones registradas',
     avgWaitSeconds: 'Espera media',
     avgCrossingSeconds: 'Duración media del cruce',
-    disorientationRate: 'Cruces con desorientación',
-    panicAlerts: 'Alertas de pánico',
+    disorientationRate: 'Sesiones con desorientación',
+    avgGreenLeftSeconds: 'Verde restante al empezar a cruzar',
   },
   zones: {
     title: 'Zonas con más cruces',
     caption: 'Zonas con más cruces registrados en el periodo',
     columns: {
       zone: 'Zona (centro aproximado)',
-      sessions: 'Cruces',
+      sessions: 'Sesiones',
       wait: 'Espera media',
       disorientation: 'Desorientación',
-      panic: 'Alertas',
+      greenLeft: 'Verde restante',
     },
   },
   meta: {

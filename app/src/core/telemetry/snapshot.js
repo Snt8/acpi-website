@@ -11,9 +11,10 @@
  *   avgWaitSeconds: number | null,
  *   avgCrossingSeconds: number | null,
  *   disorientationRate: number,
- *   panicAlerts: number,
+ *   avgGreenLeftSeconds: number | null,
  * }} Summary
  * @typedef {Summary & { lat: number, lng: number }} Zone
+ * @typedef {{ id: string, lat: number, lng: number, origin: 'brazalete' | 'manual' | null }} TrafficLight
  * @typedef {{
  *   version: number,
  *   status: 'ok' | 'insufficient' | 'unconfigured',
@@ -23,10 +24,11 @@
  *   totals: Summary | null,
  *   zones: Zone[],
  *   hiddenSessions: number,
+ *   trafficLights: TrafficLight[],
  * }} Snapshot
  */
 
-export const SNAPSHOT_VERSION = 1
+export const SNAPSHOT_VERSION = 2
 
 export const SNAPSHOT_STATUS = Object.freeze({
   /** Hay datos suficientes para publicarlos sin identificar a nadie. */
@@ -49,13 +51,22 @@ const METERS_PER_DEGREE = 111_320
 export const cellSizeMeters = (decimals) => Math.round(METERS_PER_DEGREE * 10 ** -decimals)
 
 /**
- * Resumen sin cifras, para cuando no hay nada publicable.
+ * Resumen sin cifras de cruces, para cuando no hay nada publicable. Los
+ * semáforos sí se publican: son infraestructura de la calle, no personas.
  *
  * @param {Snapshot['status']} status
- * @param {{ generatedAt: Date, range?: Snapshot['range'], policy?: Snapshot['policy'] }} meta
+ * @param {{
+ *   generatedAt: Date,
+ *   range?: Snapshot['range'],
+ *   policy?: Snapshot['policy'],
+ *   trafficLights?: TrafficLight[],
+ * }} meta
  * @returns {Snapshot}
  */
-export function emptySnapshot(status, { generatedAt, range = null, policy = null }) {
+export function emptySnapshot(
+  status,
+  { generatedAt, range = null, policy = null, trafficLights = [] },
+) {
   return {
     version: SNAPSHOT_VERSION,
     status,
@@ -65,6 +76,7 @@ export function emptySnapshot(status, { generatedAt, range = null, policy = null
     totals: null,
     zones: [],
     hiddenSessions: 0,
+    trafficLights,
   }
 }
 
@@ -77,7 +89,7 @@ export function emptySnapshot(status, { generatedAt, range = null, policy = null
 export function parseSnapshot(raw) {
   if (raw?.version !== SNAPSHOT_VERSION) return null
   if (!Object.values(SNAPSHOT_STATUS).includes(raw.status)) return null
-  if (!Array.isArray(raw.zones)) return null
+  if (!Array.isArray(raw.zones) || !Array.isArray(raw.trafficLights)) return null
   if (raw.status === SNAPSHOT_STATUS.ok && typeof raw.totals?.sessions !== 'number') {
     return null
   }

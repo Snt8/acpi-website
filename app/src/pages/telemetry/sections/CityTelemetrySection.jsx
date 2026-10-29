@@ -10,7 +10,6 @@ import {
 import { Card, Reveal, Section, SectionHeading } from '../../../shared/ui/index.js'
 import { StatTile } from '../components/StatTile.jsx'
 import { ZoneTable } from '../components/ZoneTable.jsx'
-import { useTelemetrySnapshot } from '../hooks/useTelemetrySnapshot.js'
 
 /** Cómo se presenta cada cifra del total, en el orden en que se muestran. */
 const TOTAL_FORMATS = Object.freeze([
@@ -18,12 +17,15 @@ const TOTAL_FORMATS = Object.freeze([
   ['avgWaitSeconds', formatSeconds],
   ['avgCrossingSeconds', formatSeconds],
   ['disorientationRate', formatPercent],
-  ['panicAlerts', formatInteger],
+  ['avgGreenLeftSeconds', formatSeconds],
 ])
 
-/** Telemetría agregada de la ciudad, tal como la publica la Action de Grafana. */
-export function CityTelemetrySection() {
-  const { status, snapshot } = useTelemetrySnapshot()
+/**
+ * Telemetría agregada de la ciudad, tal como la publica la Action de Grafana.
+ *
+ * @param {ReturnType<typeof import('../hooks/useTelemetrySnapshot.js').useTelemetrySnapshot>} props
+ */
+export function CityTelemetrySection({ status, snapshot }) {
   const { eyebrow, title, description, states } = CITY_TELEMETRY
 
   return (

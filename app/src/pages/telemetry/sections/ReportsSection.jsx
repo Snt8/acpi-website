@@ -16,7 +16,7 @@ import {
  * comparten: el reporte seleccionado y las coordenadas en borrador, que
  * escriben tanto el mapa como el formulario.
  */
-export function ReportsSection() {
+export function ReportsSection({ trafficLights }) {
   const { reports, addReport, removeReport } = useReports()
   const [selectedId, setSelectedId] = useState(null)
   const [positionInput, setPositionInput] = useState(EMPTY_POSITION_INPUT)
@@ -55,6 +55,7 @@ export function ReportsSection() {
           <Reveal>
             <ReportsMap
               reports={reports}
+              trafficLights={trafficLights}
               selectedId={selectedId}
               draftPosition={draftPosition}
               onPick={handlePick}

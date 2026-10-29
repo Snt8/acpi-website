@@ -35,6 +35,17 @@ const pinIcon = (L, variant) => {
 }
 
 /**
+ * Semáforo registrado por la app: el mismo semáforo de tres luces del logo.
+ * Lleva un borde claro para destacar sobre cualquier fondo del mapa.
+ */
+const LIGHT_SVG =
+  '<svg viewBox="0 0 18 30" aria-hidden="true"><rect x="1" y="1" width="16" height="28" rx="5" fill="var(--color-ink)" stroke="var(--color-paper-raised)" stroke-width="2"/><circle cx="9" cy="8.5" r="2.8" fill="#e23b2e"/><circle cx="9" cy="15" r="2.8" fill="#f2b632"/><circle cx="9" cy="21.5" r="2.8" fill="#3fae49"/></svg>'
+
+/** @param {typeof import('leaflet')} L */
+const lightIcon = (L) =>
+  L.divIcon({ className: 'acpi-light', html: LIGHT_SVG, iconSize: [18, 30], iconAnchor: [9, 15] })
+
+/**
  * Encuadre inicial: todos los reportes guardados o, si no hay, la ciudad.
  *
  * @param {import('leaflet').Map} map
@@ -56,12 +67,21 @@ function applyInitialView(map, reports) {
  * Mapa de OpenStreetMap (Leaflet) con un marcador por reporte.
  *
  * El mapa se crea una vez; los marcadores se rehacen cuando cambian los
- * reportes, la selección o el punto en borrador. Son pocos y viven en este
+ * reportes, la selección o el punto en borrador. Los semáforos registrados
+ * por la app van en su propia capa, que solo cambia al llegar el resumen; al
+ * hacer clic en uno se toman sus coordenadas para reportarlo. Son pocos y viven en este
  * navegador, así que rehacerlos es más simple que reconciliarlos uno a uno.
  * Si el mapa no carga (sin conexión, por ejemplo), el componente lo dice y la
  * página sigue funcionando con la lista y las coordenadas escritas a mano.
  */
-export function ReportsMap({ reports, selectedId, draftPosition, onPick, onSelect }) {
+export function ReportsMap({
+  reports,
+  trafficLights,
+  selectedId,
+  draftPosition,
+  onPick,
+  onSelect,
+}) {
   const containerRef = useRef(null)
   const [instance, setInstance] = useState(null)
   const [status, setStatus] = useState('loading')
@@ -147,6 +167,23 @@ export function ReportsMap({ reports, selectedId, draftPosition, onPick, onSelec
     return () => markers.forEach((marker) => marker.remove())
   }, [instance, reports, selectedId, draftPosition])
 
+  useEffect(() => {
+    if (!instance || trafficLights.length === 0) return undefined
+    const { L, map } = instance
+    const icon = lightIcon(L)
+
+    const layer = L.layerGroup(
+      trafficLights.map((light) =>
+        L.marker(light, {
+          icon,
+          title: copy.lightTitle[light.origin ?? 'unknown'],
+        }).on('click', () => latest.current.onPick({ lat: light.lat, lng: light.lng })),
+      ),
+    ).addTo(map)
+
+    return () => layer.remove()
+  }, [instance, trafficLights, copy.lightTitle])
+
   const selected = reports.find((report) => report.id === selectedId)
 
   useEffect(() => {
@@ -177,10 +214,32 @@ export function ReportsMap({ reports, selectedId, draftPosition, onPick, onSelec
         )}
       </div>
 
+      <ul
+        aria-label="Leyenda del mapa"
+        className="flex flex-wrap gap-x-6 gap-y-2 border-t border-line px-6 pt-4 text-xs text-ink-soft"
+      >
+        <li className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="acpi-pin acpi-pin--report h-4 w-3"
+            dangerouslySetInnerHTML={{ __html: PIN_SVG }}
+          />
+          {copy.legend.reports} ({reports.length})
+        </li>
+        <li className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="acpi-light h-4 w-2.5"
+            dangerouslySetInnerHTML={{ __html: LIGHT_SVG }}
+          />
+          {copy.legend.lights(trafficLights.length)}
+        </li>
+      </ul>
+
       <p
         id="mapa-reportes-ayuda"
         aria-live="polite"
-        className="border-t border-line px-6 py-4 text-sm leading-relaxed text-ink-soft"
+        className="px-6 pb-4 pt-2 text-sm leading-relaxed text-ink-soft"
       >
         {selected ? (
           <>

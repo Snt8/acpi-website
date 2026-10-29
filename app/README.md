@@ -108,13 +108,23 @@ Grafana, anonimiza el resultado y escribe `public/telemetry.json` antes de
 compilar. El token y los datos sin agregar no salen del runner, y no se hace
 ningún commit por hora. La anonimización (`scripts/telemetry/anonymize.mjs`):
 
-- solo lee los campos del payload de la app (`docs/grafana-setup.md` en el
-  repositorio ACPI) que necesita: `lat`, `lon`, `waiting_sec`, `duration_sec`,
-  `status` (2 = orientación incorrecta, 3 = pánico) y `panics`. `device_id`,
-  `session_id`, `timestamp` y `steps` se descartan sin leerlos;
+- de los eventos `cruce` (formato v2, `docs/grafana-setup.md` en el
+  repositorio ACPI) solo lee `lat`, `lon`, `espera_s`, `cruzo`,
+  `duracion_cruce_s`, `verde_restante_s`, `veces_mal_orientado` y `simulado`.
+  El seudónimo del teléfono, la sesión, los momentos y el rumbo se descartan
+  sin leerlos, y las sesiones simuladas no cuentan;
+- una sesión sin GPS cuenta en el total, pero en ninguna zona;
 - agrupa los cruces en una cuadrícula de ~110 m y publica una zona solo si
   reúne al menos 5 cruces; los de zonas más pequeñas cuentan en el total;
 - no publica ninguna cifra si el total no llega a ese mínimo.
+
+El registro de semáforos (`scripts/telemetry/traffic-lights.mjs`) no se
+reconstruye desde cero, porque Loki solo guarda unos días: parte del
+`telemetry.json` ya publicado y le aplica en orden los eventos `semaforo` de la
+ventana. Repetir un evento no cambia nada, así que las ventanas pueden
+solaparse. Cada semáforo se publica con un identificador que resume la pareja
+`dispositivo` + `semaforo_id` sin revelarla. En el mapa, al hacer clic en uno
+se toman sus coordenadas para reportarlo.
 
 El formato de `telemetry.json` lo define `core/telemetry/snapshot.js`, que
 importan tanto el script como la página: cambiarlo obliga a subir

@@ -1,14 +1,11 @@
-import {
-  SNAPSHOT_STATUS,
-  SNAPSHOT_VERSION,
-  emptySnapshot,
-} from '../../src/core/telemetry/snapshot.js'
+import { SNAPSHOT_STATUS } from '../../src/core/telemetry/snapshot.js'
+import { EVENT_TYPE, isEvent, round, toDuration, toFlag, toNumber, toPosition } from './fields.mjs'
 
 /**
- * Política de anonimato del resumen público.
+ * Política de anonimato de las cifras de cruces.
  *
- * - Solo se leen los campos de `toSession`; cualquier otra columna que traiga
- *   la consulta (dispositivo, sesión, hora exacta…) se descarta sin mirarla.
+ * - Solo se leen los campos de `toSession`; los demás (dispositivo, sesión,
+ *   momentos exactos, rumbo…) se descartan sin mirarlos.
  * - La ubicación se redondea a una cuadrícula de unos 110 m: se publica la
  *   zona de un cruce, nunca un punto.
  * - Una zona con menos de `minSessionsPerZone` cruces no se publica, porque
@@ -22,113 +19,70 @@ export const ANONYMITY_POLICY = Object.freeze({
   maxZones: 12,
 })
 
-const toNumber = (value) =>
-  value === null || value === undefined || value === '' ? Number.NaN : Number(value)
-
-const toDuration = (value) => {
-  const seconds = toNumber(value)
-  return Number.isFinite(seconds) && seconds >= 0 ? seconds : null
-}
-
-const toCount = (value) => {
-  const count = toNumber(value)
-  return Number.isInteger(count) && count > 0 ? count : 0
-}
-
-/** `status` que envía la app al cerrar una sesión (docs/grafana-setup.md). */
-const SESSION_STATUS = Object.freeze({ misaligned: 2, panic: 3 })
-
-const round = (value, decimals) => {
-  const factor = 10 ** decimals
-  return Math.round(value * factor) / factor
-}
-
 /**
- * Reduce una fila de Grafana a la sesión mínima que necesita el resumen.
- * Lee los campos del payload que envía la app al cerrar cada cruce
- * (`lat`, `lon`, `waiting_sec`, `duration_sec`, `status`, `panics`); los
- * demás —`device_id`, `session_id`, `timestamp`, `steps`— nunca se leen.
+ * Reduce un evento `cruce` de la app a la sesión mínima que necesita el
+ * resumen. Descarta los eventos de otro tipo y los del brazalete simulado.
+ * Una sesión sin GPS (`lat` nulo) cuenta en el total, pero en ninguna zona.
  *
  * @param {Record<string, unknown>} row
  */
 export function toSession(row) {
-  const lat = toNumber(row.lat)
-  const lng = toNumber(row.lon)
-  if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return null
+  if (!isEvent(row, EVENT_TYPE.crossing) || toFlag(row.simulado)) return null
 
-  const status = toNumber(row.status)
-  const panics = toCount(row.panics)
-
+  const crossed = toFlag(row.cruzo)
   return {
-    lat,
-    lng,
-    wait: toDuration(row.waiting_sec),
-    crossing: toDuration(row.duration_sec),
-    disoriented: status === SESSION_STATUS.misaligned,
-    // Una sesión cerrada en pánico cuenta al menos una alerta aunque el
-    // contador de pulsaciones no haya llegado a registrarla.
-    panicAlerts: status === SESSION_STATUS.panic ? Math.max(panics, 1) : panics,
+    position: toPosition(row),
+    wait: toDuration(row.espera_s),
+    crossing: crossed ? toDuration(row.duracion_cruce_s) : null,
+    greenLeft: crossed ? toDuration(row.verde_restante_s) : null,
+    disoriented: toNumber(row.veces_mal_orientado) > 0,
   }
 }
 
 /** Acumulador de un grupo de sesiones: la ciudad entera o una zona. */
 const createAccumulator = () => ({
   sessions: 0,
-  waitSum: 0,
-  waitCount: 0,
-  crossingSum: 0,
-  crossingCount: 0,
   disoriented: 0,
-  panic: 0,
+  wait: { sum: 0, count: 0 },
+  crossing: { sum: 0, count: 0 },
+  greenLeft: { sum: 0, count: 0 },
 })
+
+const addValue = (metric, value) => {
+  if (value === null) return
+  metric.sum += value
+  metric.count += 1
+}
 
 function accumulate(acc, session) {
   acc.sessions += 1
-  if (session.wait !== null) {
-    acc.waitSum += session.wait
-    acc.waitCount += 1
-  }
-  if (session.crossing !== null) {
-    acc.crossingSum += session.crossing
-    acc.crossingCount += 1
-  }
   if (session.disoriented) acc.disoriented += 1
-  acc.panic += session.panicAlerts
+  addValue(acc.wait, session.wait)
+  addValue(acc.crossing, session.crossing)
+  addValue(acc.greenLeft, session.greenLeft)
 }
 
-const average = (sum, count) => (count === 0 ? null : round(sum / count, 1))
+const average = ({ sum, count }) => (count === 0 ? null : round(sum / count, 1))
 
 /** @returns {import('../../src/core/telemetry/snapshot.js').Summary} */
 const summarize = (acc) => ({
   sessions: acc.sessions,
-  avgWaitSeconds: average(acc.waitSum, acc.waitCount),
-  avgCrossingSeconds: average(acc.crossingSum, acc.crossingCount),
+  avgWaitSeconds: average(acc.wait),
+  avgCrossingSeconds: average(acc.crossing),
   disorientationRate: round(acc.disoriented / acc.sessions, 3),
-  panicAlerts: acc.panic,
+  avgGreenLeftSeconds: average(acc.greenLeft),
 })
 
 /**
- * Convierte las filas de Grafana en el resumen anónimo que publica el sitio.
- * Es una función pura: misma entrada, mismo archivo.
+ * Agrega los cruces en cifras de ciudad y de zona. Función pura.
  *
  * @param {Record<string, unknown>[]} rows
- * @param {{ generatedAt: Date, from: Date, to: Date, policy?: typeof ANONYMITY_POLICY }} meta
- * @returns {import('../../src/core/telemetry/snapshot.js').Snapshot}
+ * @param {typeof ANONYMITY_POLICY} [policy]
  */
-export function buildSnapshot(rows, { generatedAt, from, to, policy = ANONYMITY_POLICY }) {
-  const range = { from: from.toISOString(), to: to.toISOString() }
-  const publicPolicy = {
-    cellDecimals: policy.cellDecimals,
-    minSessionsPerZone: policy.minSessionsPerZone,
-  }
-
+export function summarizeCrossings(rows, policy = ANONYMITY_POLICY) {
   const sessions = rows.map(toSession).filter(Boolean)
   if (sessions.length < policy.minSessionsPerZone) {
-    return emptySnapshot(SNAPSHOT_STATUS.insufficient, {
-      generatedAt,
-      range,
-      policy: publicPolicy,
-    })
+    return { status: SNAPSHOT_STATUS.insufficient, totals: null, zones: [], hiddenSessions: 0 }
   }
 
   // Un solo recorrido llena el total y las celdas de la cuadrícula.
@@ -136,8 +90,9 @@ export function buildSnapshot(rows, { generatedAt, from, to, policy = ANONYMITY_
   const cells = new Map()
   for (const session of sessions) {
     accumulate(totals, session)
-    const lat = round(session.lat, policy.cellDecimals)
-    const lng = round(session.lng, policy.cellDecimals)
+    if (!session.position) continue
+    const lat = round(session.position.lat, policy.cellDecimals)
+    const lng = round(session.position.lng, policy.cellDecimals)
     const key = `${lat},${lng}`
     if (!cells.has(key)) cells.set(key, { lat, lng, acc: createAccumulator() })
     accumulate(cells.get(key).acc, session)
@@ -148,19 +103,13 @@ export function buildSnapshot(rows, { generatedAt, from, to, policy = ANONYMITY_
   )
   const publishedSessions = publishable.reduce((sum, cell) => sum + cell.acc.sessions, 0)
 
-  const zones = publishable
-    .sort((a, b) => b.acc.sessions - a.acc.sessions)
-    .slice(0, policy.maxZones)
-    .map(({ lat, lng, acc }) => ({ lat, lng, ...summarize(acc) }))
-
   return {
-    version: SNAPSHOT_VERSION,
     status: SNAPSHOT_STATUS.ok,
-    generatedAt: generatedAt.toISOString(),
-    range,
-    policy: publicPolicy,
     totals: summarize(totals),
-    zones,
+    zones: publishable
+      .sort((a, b) => b.acc.sessions - a.acc.sessions)
+      .slice(0, policy.maxZones)
+      .map(({ lat, lng, acc }) => ({ lat, lng, ...summarize(acc) })),
     hiddenSessions: sessions.length - publishedSessions,
   }
 }
