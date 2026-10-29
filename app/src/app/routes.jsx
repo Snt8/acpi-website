@@ -4,6 +4,7 @@ import { SiteLayout } from '../layout/SiteLayout.jsx'
 import BraceletPage from '../pages/bracelet/BraceletPage.jsx'
 import HomePage from '../pages/home/HomePage.jsx'
 import NotFoundPage from '../pages/not-found/NotFoundPage.jsx'
+import TelemetryPage from '../pages/telemetry/TelemetryPage.jsx'
 import UpcomingPage from '../pages/upcoming/UpcomingPage.jsx'
 
 /**
@@ -28,8 +29,8 @@ export const routes = [
       },
       {
         path: PATHS.telemetry,
-        element: <UpcomingPage {...UPCOMING_PAGES.telemetry} />,
-        handle: { title: UPCOMING_PAGES.telemetry.title },
+        element: <TelemetryPage />,
+        handle: { title: 'Telemetría' },
       },
       {
         path: PATHS.mobileApp,
