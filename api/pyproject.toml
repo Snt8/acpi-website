@@ -1,0 +1,38 @@
+[project]
+name = "acpi-api"
+version = "0.1.0"
+description = "Servidor de ACPI: recibe los eventos de la app móvil y los guarda en Supabase"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.162,<1",
+  "uvicorn[standard]>=0.54,<1",
+  "pydantic>=2.14,<3",
+  "pydantic-settings>=2.16,<3",
+  "supabase>=2.33,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.2", "httpx>=0.28", "ruff>=0.17", "psycopg[binary]>=3.2"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acpi_api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["database: necesita un PostgreSQL local (ACPI_TEST_DATABASE_URL)"]
+# La TestClient de Starlette avisa que prefiere httpx2; httpx sigue funcionando
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+# Un if/else de dos ramas se lee mejor que un ternario anidado
+ignore = ["SIM108"]

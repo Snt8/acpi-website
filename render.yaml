@@ -1,0 +1,29 @@
+# Blueprint de Render para la API (api/). Render → New → Blueprint → este
+# repositorio. Las variables con `sync: false` se piden al crear el servicio.
+services:
+  - type: web
+    name: acpi
+    runtime: python
+    plan: free
+    rootDir: api
+    buildCommand: pip install .
+    # --proxy-headers: Render pasa la IP del cliente en X-Forwarded-For, que usa
+    # el límite de reportes por cliente
+    startCommand: >-
+      uvicorn acpi_api.main:create_app --factory --host 0.0.0.0 --port $PORT
+      --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /api/salud
+    autoDeploy: true
+    buildFilter:
+      paths: ['api/**']
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: API_TOKEN_APP
+        sync: false
+      - key: API_TOKEN_ADMIN
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://snt8.github.io,http://localhost:5173

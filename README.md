@@ -6,8 +6,9 @@ anónimos de los cruces.
 
 **En línea:** <https://snt8.github.io/acpi-website/>
 
-> Este repositorio contiene solo el sitio. El sistema —firmware de la baliza y
-> del brazalete, app móvil y documentación técnica— vive en el repositorio
+> Este repositorio contiene el sitio y la API que recibe los datos de la app
+> ([`api/`](api/README.md)). El sistema —firmware de la baliza y del
+> brazalete, app móvil y documentación técnica— vive en el repositorio
 > principal: **[Snt8/ACPI](https://github.com/Snt8/ACPI)**.
 
 ## Lugar en el sistema
@@ -18,7 +19,13 @@ ningún cruce, solo muestra lo que el resto del sistema ya registró.
 ```text
 [Baliza del semáforo] ─ESP-NOW─► [Brazalete] ─BLE─► [App móvil] ─HTTPS─► [Grafana Cloud] ─cada hora─► [ACPI Web]
  firmware/semaforo               firmware/brazalete  app-movil                                         este repositorio
+                                                         │
+                                                         └──HTTPS──► [ACPI API + Supabase]   api/ de este repositorio
 ```
+
+La app está pasando de escribir en Grafana Cloud a enviar sus eventos a la
+[API](api/README.md), que los guarda en Supabase y publica las mismas cifras
+anónimas. Mientras la web no la use, sigue leyendo la telemetría de Grafana.
 
 | Pieza | Dónde está |
 | --- | --- |
@@ -26,6 +33,7 @@ ningún cruce, solo muestra lo que el resto del sistema ya registró.
 | Brazalete (ESP32-C3 Super Mini) | [`ACPI/firmware/brazalete`](https://github.com/Snt8/ACPI/tree/main/firmware/brazalete) |
 | App móvil (React Native + Expo) | [`ACPI/app-movil`](https://github.com/Snt8/ACPI/tree/main/app-movil) |
 | Telemetría en Grafana Cloud | [`ACPI/docs/grafana-setup.md`](https://github.com/Snt8/ACPI/blob/main/docs/grafana-setup.md) |
+| API (FastAPI + Supabase, en Render) | [`api/`](api/README.md) de este repositorio |
 | Sitio web | Este repositorio |
 
 ### Lo que el sitio toma del repositorio principal
@@ -59,8 +67,13 @@ Los bocetos originales están en [`designs/`](designs/).
 │   ├── src/                      Código del sitio (ver app/README.md)
 │   ├── scripts/telemetry/        Consulta a Grafana y anonimización
 │   └── public/                   Favicons; telemetry.json se genera al desplegar
+├── api/                          API: FastAPI + Supabase (ver api/README.md)
+│   ├── src/acpi_api/             Dominio, casos de uso, repositorios y rutas
+│   └── supabase/migrations/      Esquema de la base
+├── render.yaml                   Despliegue de la API en Render
 ├── .github/
 │   ├── workflows/deploy.yml      Compila y publica en GitHub Pages
+│   ├── workflows/api.yml         Lint y pruebas de la API
 │   └── actions/grafana-telemetry Action que trae y anonimiza la telemetría
 ├── designs/                      Bocetos a mano de las páginas
 └── .claude/                      Guía del sistema y reglas de trabajo
@@ -168,6 +181,8 @@ El sitio no recibe datos de nadie que lo visite:
 
 - [`app/README.md`](app/README.md): arquitectura del código, telemetría,
   imágenes, animación y accesibilidad.
+- [`api/README.md`](api/README.md): rutas y contrato de la API, tablas de
+  Supabase, despliegue en Render y desarrollo.
 - [`.claude/guia-acpi-web.md`](.claude/guia-acpi-web.md): guía del sistema en
   lenguaje sencillo, de donde salen los textos del sitio.
 - [Repositorio ACPI](https://github.com/Snt8/ACPI): firmware, app móvil,

@@ -6,6 +6,13 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--dir", "app", "dev"],
       "port": 5173
+    },
+    {
+      "name": "acpi-api",
+      "runtimeExecutable": "api/.venv/Scripts/uvicorn",
+      "runtimeArgs": ["acpi_api.main:create_app", "--factory", "--app-dir", "api/src", "--env-file", "api/.env", "--reload", "--reload-dir", "api/src", "--port", "8000"],
+      "port": 8000,
+      "url": "http://localhost:8000"
     }
   ]
 }
