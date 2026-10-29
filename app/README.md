@@ -17,8 +17,8 @@ pnpm test     # pruebas (node --test)
 pnpm telemetry  # genera public/telemetry.json desde Grafana (usa .env.local)
 ```
 
-Copia `.env.example` como `.env.local` para la clave de Google Maps y, si
-quieres generar la telemetría en local, las credenciales de Grafana.
+Para generar la telemetría en local, copia `.env.example` como `.env.local`
+con las credenciales de Grafana. El mapa no necesita configuración.
 
 ## Arquitectura
 
@@ -32,7 +32,7 @@ src/
 │   ├── content/    Textos del sitio como datos puros.
 │   ├── routing/    Rutas canónicas (PATHS).
 │   └── telemetry/  Dominio: reportes de semáforos y contrato del resumen.
-├── infrastructure/ Adaptadores: localStorage, Google Maps, telemetry.json.
+├── infrastructure/ Adaptadores: localStorage, Leaflet, telemetry.json.
 ├── layout/         Cabecera, pie y shell común a todas las páginas.
 ├── pages/          Una carpeta por página, con sus secciones propias.
 └── shared/         Piezas reutilizables sin conocimiento del dominio.
@@ -92,12 +92,15 @@ página los lee con `useSyncExternalStore`, así que dos pestañas abiertas se
 mantienen sincronizadas. La lista bajo el mapa contiene la misma información,
 porque para quien usa lector de pantalla es la vista principal.
 
-El mapa usa la API de JavaScript de Google Maps con marcadores avanzados.
-Necesita `VITE_GOOGLE_MAPS_API_KEY` y, en producción, un Map ID propio
-(`VITE_GOOGLE_MAPS_MAP_ID`; sin él se usa `DEMO_MAP_ID`). La clave termina en
-el bundle, como en cualquier mapa web, así que en Google Cloud hay que
-restringirla por referente HTTP al dominio de GitHub Pages. Sin clave, o si
-Google la rechaza, la página lo avisa y sigue funcionando.
+El mapa es [Leaflet](https://leafletjs.com) con las teselas de
+OpenStreetMap: mapa mundial real, sin cuenta, clave ni facturación. La
+política de uso de las teselas solo pide mostrar la atribución, que Leaflet
+pone en la esquina. `infrastructure/maps/leafletMap.js` carga la biblioteca y
+su CSS bajo demanda, así que solo los descarga la página de telemetría. Los
+pines son `divIcon` con un SVG propio cuyo color sale de los tokens
+(`.acpi-pin--*` en `index.css`). El contenedor lleva `isolate` para que los
+`z-index` de Leaflet no tapen la cabecera fija. Si el mapa no carga, la
+página lo avisa y sigue funcionando.
 
 **Cruces registrados.** Cada hora el workflow de despliegue ejecuta la Action
 `.github/actions/grafana-telemetry`, que consulta `POST /api/ds/query` en

@@ -77,10 +77,10 @@ pnpm install
 pnpm dev
 ```
 
-Para ver el mapa en local, copia `app/.env.example` como `app/.env.local` y
-añade una clave de Google Maps. Sin ella el sitio funciona igual y muestra un
-aviso en lugar del mapa. Los demás comandos y la arquitectura del código están
-en [`app/README.md`](app/README.md).
+El mapa es de OpenStreetMap y no necesita configuración. Para generar la
+telemetría en local, copia `app/.env.example` como `app/.env.local` con las
+credenciales de Grafana y ejecuta `pnpm telemetry`. Los demás comandos y la
+arquitectura del código están en [`app/README.md`](app/README.md).
 
 ## Despliegue
 
@@ -93,7 +93,7 @@ casos: con cada push a `main`, cada hora en punto y a mano desde la pestaña
 2. Ejecuta la Action [`grafana-telemetry`](.github/actions/grafana-telemetry/action.yml),
    que consulta Grafana, anonimiza los cruces y escribe
    `app/public/telemetry.json`.
-3. Compila con la clave de Google Maps y publica.
+3. Compila y publica.
 
 La ejecución horaria es la que mantiene al día la telemetría sin hacer un
 commit por hora. GitHub puede retrasarla unos minutos y la desactiva si el
@@ -101,20 +101,15 @@ repositorio pasa 60 días sin actividad.
 
 ### Configuración
 
-En *Settings → Secrets and variables → Actions*:
+Solo la telemetría necesita configuración; el mapa usa OpenStreetMap, que no
+pide cuenta, clave ni tarjeta. En *Settings → Secrets and variables →
+Actions*:
 
 | Nombre | Tipo | Contenido |
 | --- | --- | --- |
-| `GOOGLE_MAPS_API_KEY` | Secreto | Clave de la API de JavaScript de Maps |
-| `GOOGLE_MAPS_MAP_ID` | Variable | Map ID con marcadores avanzados (sin él se usa `DEMO_MAP_ID`) |
 | `GRAFANA_URL` | Variable | URL base de Grafana, p. ej. `https://acpi.grafana.net` |
 | `GRAFANA_TOKEN` | Secreto | Token de una service account con rol Viewer |
 | `GRAFANA_QUERIES` | Variable | Arreglo JSON `queries` de `POST /api/ds/query` |
-
-La clave de Maps termina en el código público del sitio, como en cualquier
-mapa web: su protección es restringirla en Google Cloud por referente HTTP a
-`https://snt8.github.io/*`. Va en un secreto solo para que no quede escrita en
-el repositorio.
 
 `GRAFANA_QUERIES` debe devolver, en formato tabla, una fila por sesión con los
 campos del payload de la app: `lat`, `lon`, `waiting_sec`, `duration_sec`,

@@ -97,6 +97,27 @@
   background-size: 28px 28px;
 }
 
+/* Pines del mapa de reportes. Leaflet los crea fuera de React, así que su
+   color vive aquí y sale de los mismos tokens que el resto del sitio. */
+.acpi-pin {
+  color: var(--color-amber);
+  filter: drop-shadow(0 1px 1px rgb(13 17 23 / 0.25));
+}
+
+.acpi-pin svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.acpi-pin--selected {
+  color: var(--color-signal);
+}
+
+.acpi-pin--draft {
+  color: var(--color-ink);
+}
+
 /* Desvanece cualquier fondo hacia los bordes. */
 @utility mask-fade-edges {
   mask-image: radial-gradient(ellipse at center, #000 35%, transparent 78%);

@@ -70,14 +70,8 @@ jobs:
           grafana-token: ${{ secrets.GRAFANA_TOKEN }}
           queries: ${{ vars.GRAFANA_QUERIES }}
 
-      # La clave de Maps acaba en el bundle (Google la usa desde el navegador),
-      # así que su protección es restringirla por dominio en Google Cloud. Va
-      # en un secreto solo para que no quede escrita en el repositorio.
       - name: Compilar
         run: pnpm build
-        env:
-          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
-          VITE_GOOGLE_MAPS_MAP_ID: ${{ vars.GOOGLE_MAPS_MAP_ID }}
 
       # GitHub Pages sirve archivos estáticos y no reescribe rutas: al pedir
       # /acpi-website/brazalete no encuentra el archivo y devuelve 404.html.

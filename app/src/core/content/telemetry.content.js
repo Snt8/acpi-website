@@ -62,6 +62,8 @@ export const REPORTS_SECTION = Object.freeze({
     hint: 'Haz clic en el mapa para tomar las coordenadas del cruce.',
     listHint: 'La lista de reportes contiene la misma información que el mapa.',
     loading: 'Cargando el mapa…',
+    zoomIn: 'Acercar',
+    zoomOut: 'Alejar',
     unavailable:
       'El mapa no está disponible en este momento. Puedes reportar escribiendo las coordenadas o usando tu ubicación, y la lista sigue completa.',
   },
