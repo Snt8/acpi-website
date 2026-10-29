@@ -66,6 +66,23 @@ function frameToRows({ schema, data }) {
   const length = columns[0]?.length ?? 0
 
   return Array.from({ length }, (_, row) =>
-    Object.fromEntries(names.map((name, column) => [name, columns[column]?.[row]])),
+    fromLogLine(
+      Object.fromEntries(names.map((name, column) => [name, columns[column]?.[row]])),
+    ),
   )
+}
+
+/**
+ * Una consulta a Loki devuelve cada registro como texto en `Line`. La app
+ * escribe ahí el JSON de la sesión, así que ese JSON pasa a ser la fila. Las
+ * filas de fuentes tabulares, o las líneas que no son JSON, quedan igual.
+ */
+function fromLogLine(row) {
+  if (typeof row.Line !== 'string') return row
+  try {
+    const parsed = JSON.parse(row.Line)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : row
+  } catch {
+    return row
+  }
 }

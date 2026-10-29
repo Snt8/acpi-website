@@ -53,6 +53,36 @@ describe('framesToRows', () => {
     ])
   })
 
+  it('convierte en fila el JSON de cada línea de Loki', () => {
+    const [session] = crossings(1, 4.6, -74.08)
+    const payload = {
+      results: {
+        A: {
+          frames: [
+            {
+              schema: {
+                fields: [{ name: 'labels' }, { name: 'Time' }, { name: 'Line' }, { name: 'tsNs' }],
+              },
+              data: {
+                values: [
+                  [{ app: 'acpi', device_id: 'ACPI_Brazalete' }, { app: 'acpi' }],
+                  [1780704000000, 1780704000001],
+                  [JSON.stringify(session), 'línea que no es JSON'],
+                  ['1780704000000000000', '1780704000001000000'],
+                ],
+              },
+            },
+          ],
+        },
+      },
+    }
+
+    const [fromJson, fromText] = framesToRows(payload)
+    assert.deepEqual(fromJson, session)
+    assert.equal(fromText.Line, 'línea que no es JSON')
+    assert.equal(toSession(fromJson).lat, 4.6)
+  })
+
   it('falla si alguna consulta trae error', () => {
     assert.throws(
       () => framesToRows({ results: { A: { frames: [] }, B: { error: 'timeout' } } }),

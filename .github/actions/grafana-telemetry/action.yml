@@ -14,9 +14,10 @@ inputs:
     required: false
   queries:
     description: >
-      Arreglo JSON con las consultas de /api/ds/query. Deben devolver los
-      campos del payload de la app: lat, lon, waiting_sec, duration_sec,
-      status y panics (docs/grafana-setup.md del repositorio ACPI).
+      Arreglo JSON con las consultas de /api/ds/query. Con Loki, cada
+      línea debe ser el JSON de una sesión; con una fuente tabular, una fila
+      por sesión. En ambos casos con los campos lat, lon, waiting_sec,
+      duration_sec, status y panics (payload de la app del repositorio ACPI).
     required: false
   range-days:
     description: Días hacia atrás que cubre el resumen.

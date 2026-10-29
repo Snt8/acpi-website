@@ -111,19 +111,27 @@ Actions*:
 | `GRAFANA_TOKEN` | Secreto | Token de una service account con rol Viewer |
 | `GRAFANA_QUERIES` | Variable | Arreglo JSON `queries` de `POST /api/ds/query` |
 
-`GRAFANA_QUERIES` debe devolver, en formato tabla, una fila por sesión con los
-campos del payload de la app: `lat`, `lon`, `waiting_sec`, `duration_sec`,
-`status` y `panics`. Un ejemplo con la fuente InfluxDB (SQL) de Grafana Cloud,
-suponiendo que la app escribe en la medición `crossings`:
+La app Android (`GrafanaReporter.kt` en el repositorio ACPI) envía cada cruce
+a **Loki**, el servicio de logs de Grafana Cloud: una línea JSON por sesión con
+la etiqueta `app="acpi"`. `GRAFANA_QUERIES` lee esas líneas desde la fuente de
+logs del stack (por lo general `grafanacloud-<stack>-logs`):
 
 ```json
 [{
   "refId": "A",
-  "datasource": { "uid": "<uid-de-la-fuente>" },
-  "format": "table",
-  "rawSql": "SELECT lat, lon, waiting_sec, duration_sec, status, panics FROM crossings WHERE $__timeFilter(time)"
+  "datasource": { "type": "loki", "uid": "<uid-de-la-fuente-de-logs>" },
+  "expr": "{app=\"acpi\"}",
+  "queryType": "range",
+  "maxLines": 5000
 }]
 ```
+
+El script toma el JSON de cada línea (`Line`) como la fila del cruce. También
+acepta fuentes tabulares (SQL), siempre que devuelvan una fila por sesión con
+las columnas `lat`, `lon`, `waiting_sec`, `duration_sec`, `status` y
+`panics`. Loki limita cada consulta a 5000 líneas: si en 30 días hay más
+cruces, conviene subir ese límite en el stack o acortar el periodo con
+`range-days` en el workflow.
 
 Sin las variables de Grafana la Action publica un resumen vacío y el sitio se
 despliega igual; la página dice que todavía no hay datos. Con ellas, si Grafana
